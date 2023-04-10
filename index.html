@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My First dApp</title>
+	<style>
+	  body {
+		text-align: center;
+		font-family: Arial, Helvetica, sans-serif;
+	  }
+
+	  div {
+		width: 20%;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+	  }
+
+	  button {
+		width: 100%;
+		margin: 10px 0px 5px 0px;
+	  }
+	</style>
+  </head>
+  <body>
+	<div>
+		<h1>This is my dApp!</h1>
+		<p>Here we can set or get the weather:</p>
+		<br>
+		<br>
+		<textarea id="display_data"></textarea>
+		<button onclick="getWeather()">Get Weather</button>
+		<br>
+		<br>
+		<label for="weather">Input Weather:</label>
+		<input type="text" id="weather" />
+		<button onclick="setWeather()">Set Weather</button>	
+	</div>
+	
+	<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+	<script>
+		const url = "http://18.143.75.226";
+		const provider = new ethers.providers.JsonRpcProvider(url);
+		const WeatherContractAddress = "0xE21dB08B905eF722C0c474F87dABd730C734D454";
+		const WeatherContractABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_weather",
+				"type": "string"
+			}
+		],
+		"name": "setWeather",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getWeather",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+		let WeatherContract;
+		let signer;
+		
+		provider.send("eth_accounts",[]).then(() => {
+		  provider.listAccounts().then((accounts) => {
+			signer = provider.getSigner(accounts[0]);
+			console.log(signer);
+			WeatherContract = new ethers.Contract(
+			  WeatherContractAddress,
+			  WeatherContractABI,
+			  signer
+			);
+		  });
+		})
+		
+		async function getWeather() {
+			const getWeatherPromise = WeatherContract.getWeather();
+			const Weather = await getWeatherPromise;
+			console.log(Weather);
+			/*return Weather;*/
+			document.getElementById("display_data").value=Weather;
+			};
+			
+		async function setWeather() {
+			  const weather = document.getElementById("weather").value;
+			  const setWeatherPromise = WeatherContract.setWeather(weather);
+			  await setWeatherPromise;
+			  return setWeatherPromise;
+			};
+	  </script>
+  </body>
+</html>
